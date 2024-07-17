@@ -1,8 +1,9 @@
 import cv2
 import easyocr
 from ultralytics import YOLO
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 import numpy as np
+import datetime
 
 # YOLO 모델 로드
 yolo_model = YOLO("/home/tspoon/Downloads/Automatic-License-Plate-Recognition-using-YOLOv8-main/license_plate_detector.pt")
@@ -12,6 +13,9 @@ reader = easyocr.Reader(['ko'])
 
 # 웹캠 초기화
 cap = cv2.VideoCapture(0)  # 0은 기본 웹캠을 의미합니다. 다른 카메라를 사용하려면 이 값을 변경하세요.
+
+# OCR 결과를 저장할 리스트
+plate_texts = []
 
 while True:
     # 프레임 읽기
@@ -49,9 +53,9 @@ while True:
                     
                     # 검출된 번호판 영역에 사각형 그리기
                     draw.rectangle([x_min, y_min, x_max, y_max], outline="green", width=2)
-                    # 검출된 텍스트 추가
-                    font = ImageFont.truetype("arial.ttf", 15)
-                    draw.text((x_min, y_min - 20), plate_text, fill="green", font=font)
+                    
+                    # OCR 결과를 리스트에 저장
+                    plate_texts.append(plate_text)
 
     # PIL 이미지를 OpenCV 이미지로 변환
     frame_with_detections = cv2.cvtColor(np.array(image_pil), cv2.COLOR_RGB2BGR)
@@ -66,3 +70,8 @@ while True:
 # 자원 해제
 cap.release()
 cv2.destroyAllWindows()
+
+# 저장된 OCR 결과 출력
+print("Detected license plates:")
+for plate_text in plate_texts:
+    print(plate_text)
